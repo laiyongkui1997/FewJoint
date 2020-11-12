@@ -713,7 +713,6 @@ class SupportFeatureConstructor:
                                                                              intent_label2id, max_support_size)
             text = ''.join(support_feature_item.tokens)
             if text not in self.text_set:
-                self.text_set.add(text)
                 ret.append(FewShotSupportFeature(
                     gid=self.gid,
                     batch_gid=example.batch_id,
