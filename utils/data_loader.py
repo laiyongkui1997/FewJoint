@@ -24,14 +24,12 @@ class FewShotExample(object):
             gid: int,
             batch_id: int,
             test_id: int,
-            domain_name: str,
             support_data_items: List[DataItem],
             test_data_item: DataItem
     ):
         self.gid = gid
         self.batch_id = batch_id
         self.test_id = test_id  # query relative index in one episode
-        self.domain_name = domain_name
 
         self.support_data_items = support_data_items  # all support data items
         self.test_data_item = test_data_item  # one query data items
@@ -40,9 +38,8 @@ class FewShotExample(object):
         return self.__repr__()
 
     def __repr__(self):
-        return 'gid:{}\n\tdomain:{}\n\ttest_data:{}\n\ttest_label:{}\n\tsupport_data:{}'.format(
+        return 'gid:{}\n\ttest_data:{}\n\ttest_label:{}\n\tsupport_data:{}'.format(
             self.gid,
-            self.domain_name,
             self.test_data_item.seq_in,
             self.test_data_item.seq_out,
             self.support_data_items,
@@ -79,26 +76,25 @@ class FewShotRawDataLoader(RawDataLoaderBase):
         examples = []
         all_support_size = []
         few_shot_batches = []
-        for domain_n, domain in raw_data.items():
-            # Notice: the batch here means few shot batch, not training batch
-            for batch_id, batch in enumerate(domain):
-                one_batch_examples = []
-                support_data_items, test_data_items = self.batch2data_items(batch)
-                all_support_size.append(len(support_data_items))
-                ''' Pair each test sample with full support set '''
-                for test_id, test_data_item in enumerate(test_data_items):
-                    gid = len(examples)
-                    example = FewShotExample(
-                        gid=gid,
-                        batch_id=batch_id,
-                        test_id=test_id,
-                        domain_name=domain_n,
-                        test_data_item=test_data_item,
-                        support_data_items=support_data_items,
-                    )
-                    examples.append(example)
-                    one_batch_examples.append(example)
-                few_shot_batches.append(one_batch_examples)
+        # Notice: the batch here means few shot batch, not training batch
+        for batch_id, batch in enumerate(raw_data):
+            one_batch_examples = []
+            support_data_items, test_data_items = self.batch2data_items(batch)
+            all_support_size.append(len(support_data_items))
+            ''' Pair each test sample with full support set '''
+            for test_id, test_data_item in enumerate(test_data_items):
+                gid = len(examples)
+                example = FewShotExample(
+                    gid=gid,
+                    batch_id=batch_id,
+                    test_id=test_id,
+                    # domain_name=domain_n,
+                    test_data_item=test_data_item,
+                    support_data_items=support_data_items,
+                )
+                examples.append(example)
+                one_batch_examples.append(example)
+            few_shot_batches.append(one_batch_examples)
         max_support_size = max(all_support_size)
         return examples, few_shot_batches, max_support_size
 
